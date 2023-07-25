@@ -1,7 +1,10 @@
 import Web3 from 'web3';
+import { Web3Storage } from 'web3.storage'
 import { abi as Com_abi, contractAddress as Com_address } from './CommunityContract.js'
 import { abi as Post_abi, contractAddress as Post_address } from './PostCommentContract.js'
 
+
+const client = new Web3Storage({ token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweEYzZTliZGZEQzNhMTM2NDFDYURCODU2MjE2MzA0RkQ0YzA2QzM1ZGUiLCJpc3MiOiJ3ZWIzLXN0b3JhZ2UiLCJpYXQiOjE2OTAxNzQ3NTU5NjksIm5hbWUiOiJmb3J1bUxpa2VEYXBwIn0.C9ijCaCwH5sZpOekATc85cgGZGT56UoQbUM-DKvTx80' });
 
 // Create a Web3 instance
 let web3 = new Web3(`http://localhost:8545`);
@@ -13,6 +16,31 @@ const CommunityContract = new web3.eth.Contract(communityContractABI, communityC
 const postCommentContractABI = Post_abi; // your PostCommentContract ABI
 const postCommentContractAddress = Post_address; // your PostCommentContract address
 const PostCommentContract = new web3.eth.Contract(postCommentContractABI, postCommentContractAddress);
+
+export async function getFileByCid(cid) {
+    const res = await client.get(cid)
+    if (!res.ok) {
+        throw new Error(`failed to get cid ${cid}`)
+    }
+
+    const files = await res.files()
+    if (files.length === 0) {
+        throw new Error(`No file found for cid ${cid}`)
+    }
+
+    const file = files[0]
+    const arrayBuffer = await file.arrayBuffer()
+
+    // Convert the ArrayBuffer to a string
+    const decoder = new TextDecoder('utf-8');
+    const text = decoder.decode(arrayBuffer);
+
+    // If the file contains JSON data, parse it
+    const data = JSON.parse(text);
+
+    return data;
+}
+
 
 export async function getPost(postId) {
     const post = await PostCommentContract.methods.getPost(postId).call();
@@ -43,6 +71,22 @@ export async function getAllCommunities() {
     const communities = await Promise.all(ids.map(id => CommunityContract.methods.getCommunity(id).call()));
 
     return communities;
+}
+
+export async function fetchAllPosts(communityId) {
+    const community = await getCommunity(communityId);
+
+    // Get all posts in the community
+    const postsPromises = community.ids.map(id => getPost(id));
+    const postsData = await Promise.all(postsPromises);
+
+    const postsContentPromises = postsData.map(post => getFileByCid(post.cid));
+    const contents = await Promise.all(postsContentPromises);
+
+    // Add owner to each post content
+    const contentsWithOwner = contents.map((content, index) => ({ ...content, owner: postsData[index].owner }));
+
+    return contentsWithOwner;
 }
 
 // Check if a community is enabled

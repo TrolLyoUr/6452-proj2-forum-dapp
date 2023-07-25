@@ -318,17 +318,17 @@ export const abi = [
         "outputs": [
             {
                 "internalType": "string",
-                "name": "",
+                "name": "cid",
                 "type": "string"
             },
             {
                 "internalType": "uint256",
-                "name": "",
+                "name": "communityId",
                 "type": "uint256"
             },
             {
                 "internalType": "address",
-                "name": "",
+                "name": "owner",
                 "type": "address"
             }
         ],

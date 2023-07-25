@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { getCommunity, getPost } from '../contracts/VistWithContract';
+import { fetchAllPosts } from '../contracts/VistWithContract';
 
 function PostList({ communityId }) {
     const [posts, setPosts] = useState([]);
@@ -7,16 +7,10 @@ function PostList({ communityId }) {
     useEffect(() => {
         async function fetchPosts() {
             try {
-                // Get the community
-                const community = await getCommunity(communityId);
-                console.log('community', community);
-
-                // Get all posts in the community
-                const postsPromises = community.ids.map(getPost);
-                const postsData = await Promise.all(postsPromises);
+                const communityId = 1;
+                const postsData = await fetchAllPosts(communityId);
 
                 setPosts(postsData);
-                console.log('posts', posts);
             } catch (err) {
                 console.error(err);
             }

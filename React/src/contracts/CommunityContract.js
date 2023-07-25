@@ -267,7 +267,7 @@ export const abi = [
             },
             {
                 "internalType": "uint256[]",
-                "name": "",
+                "name": "ids",
                 "type": "uint256[]"
             }
         ],

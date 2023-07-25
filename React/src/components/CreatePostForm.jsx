@@ -9,7 +9,8 @@ function CreatePostForm() {
         event.preventDefault();
         try {
             const communityId = await getCommunityId(community);
-            const post = { communityId, content };
+            const communityIds = communityId.toString();
+            const post = { communityIds, content };
 
             // Convert the post to a Blob
             const blob = new Blob([JSON.stringify(post)], { type: 'application/json' });
