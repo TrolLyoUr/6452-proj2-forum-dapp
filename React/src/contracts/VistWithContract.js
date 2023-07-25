@@ -47,6 +47,12 @@ export async function getPost(postId) {
     return post;
 }
 
+async function getPostReserveId(postId) {
+    const post = await PostCommentContract.methods.getPost(postId).call();
+    const reserveId = { ...post, id: postId };
+    return reserveId;
+}
+
 export async function getCommentsByPost(postId) {
     const comments = await PostCommentContract.methods.getCommentsByPost(postId).call();
     return comments;
@@ -73,21 +79,40 @@ export async function getAllCommunities() {
     return communities;
 }
 
-export async function fetchAllPosts(communityId) {
+export async function fetchPostsByCommunity(communityId) {
     const community = await getCommunity(communityId);
 
-    // Get all posts in the community
-    const postsPromises = community.ids.map(id => getPost(id));
+    // Get all posts in the community and reserve their ids
+    const postsPromises = community.ids.map(id => getPostReserveId(id));
     const postsData = await Promise.all(postsPromises);
+
 
     const postsContentPromises = postsData.map(post => getFileByCid(post.cid));
     const contents = await Promise.all(postsContentPromises);
 
     // Add owner to each post content
-    const contentsWithOwner = contents.map((content, index) => ({ ...content, owner: postsData[index].owner }));
+    const contentsWithOwner = contents.map((content, index) => ({ ...content, owner: postsData[index].owner, id: postsData[index].id }));
 
     return contentsWithOwner;
 }
+
+
+export async function fetchCommentsByPost(postId) {
+
+    const commentsData = await getCommentsByPost(postId);
+    console.log(commentsData);
+
+    const commentsContentPromises = commentsData.map(comment => getFileByCid(comment.cid));
+    console.log(commentsContentPromises);
+    const comments = await Promise.all(commentsContentPromises);
+    console.log(comments);
+
+    // Add owner to each comments content
+    const contentsWithOwner = comments.map((commentContent, index) => ({ ...commentContent, owner: commentsData[index].owner }));
+
+    return contentsWithOwner;
+}
+
 
 // Check if a community is enabled
 export async function isCommunityEnabled(communityId) {

@@ -284,7 +284,7 @@ export const abi = [
                 "components": [
                     {
                         "internalType": "string",
-                        "name": "ipfsHash",
+                        "name": "cid",
                         "type": "string"
                     },
                     {

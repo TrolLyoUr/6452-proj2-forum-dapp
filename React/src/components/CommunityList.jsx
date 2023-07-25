@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getAllCommunities } from '../contracts/VistWithContract';
-
+import { Link } from 'react-router-dom';
 
 const CommunityList = () => {
     const [communities, setCommunities] = useState([]);
@@ -19,7 +19,9 @@ const CommunityList = () => {
             <h2>Community List</h2>
             {communities.map((community, index) => (
                 <div key={index}>
-                    <h3>{community.name}</h3>
+                    <Link to={`/community/${index}`}>
+                        <h3>{community.name}</h3>
+                    </Link>
                     <p>{community.description}</p>
                 </div>
             ))}
